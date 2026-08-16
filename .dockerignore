@@ -1,0 +1,12 @@
+.git
+.github
+.gitignore
+.gitattributes
+.editorconfig
+README.md
+CHANGELOG.md
+docker-compose*.yml
+release-please-config.json
+.release-please-manifest.json
+*.tmp
+*.log

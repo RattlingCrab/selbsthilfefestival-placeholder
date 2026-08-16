@@ -1,0 +1,15 @@
+# Werkzeuge
+.idea/
+.vscode/
+*.iml
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporäres
+*.tmp
+*.log
+.rumpf.tmp
+.titel.tmp

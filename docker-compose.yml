@@ -1,0 +1,20 @@
+# Vorlage fuer den Betrieb. Auf dem Server laeuft der Stack ueber Portainer.
+# Container-Namen folgen der LAGH-Konvention: vbk_lagh_<name>
+services:
+  web:
+    image: ghcr.io/rattlingcrab/selbsthilfefestival-placeholder:${IMAGE_TAG:-prod}
+    container_name: vbk_lagh_festival_placeholder
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    environment:
+      # Solange gesetzt, verlangt die Seite ein Passwort und sagt
+      # Suchmaschinen ab. Zum Livegang: Variable entfernen, Stack neu
+      # starten. Kein neues Image noetig.
+      SITE_BENUTZER: "${SITE_BENUTZER:-festival}"
+      SITE_PASSWORT: "${SITE_PASSWORT:-}"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3

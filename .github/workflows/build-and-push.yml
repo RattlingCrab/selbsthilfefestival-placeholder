@@ -1,0 +1,153 @@
+name: Build and Push Container
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Vorprüfung. Eine statische Seite hat keinen Compiler, der Fehler findet -
+  # deshalb prüfen wir hier das, was sonst niemand prüft.
+  # ---------------------------------------------------------------------------
+  pruefen:
+    name: Seite prüfen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: HTML validieren
+        run: |
+          npx --yes html-validate "site/**/*.html"
+
+      - name: Interne Verweise prüfen
+        run: |
+          fehlt=0
+          # Jeder href/src, der auf eine lokale Datei zeigt, muss existieren.
+          grep -oP '(?:href|src)="(?!https?:|data:|mailto:|tel:|#)[^"]+"' site/index.html \
+            | sed -E 's/.*="([^"]+)"/\1/' | sort -u | while read -r pfad; do
+              if [ ! -f "site/$pfad" ]; then
+                echo "::error::Verweis ins Leere: $pfad"
+                fehlt=1
+              fi
+            done
+          exit $fehlt
+
+      - name: Sprache und Titel gesetzt?
+        run: |
+          grep -q '<html lang="de"' site/index.html \
+            || { echo '::error::lang="de" fehlt - WCAG 3.1.1'; exit 1; }
+          grep -q '<title>' site/index.html \
+            || { echo '::error::<title> fehlt'; exit 1; }
+          grep -q 'name="viewport"' site/index.html \
+            || { echo '::error::viewport-Meta fehlt'; exit 1; }
+
+  build:
+    name: Image bauen und pushen
+    needs: pruefen
+    # Bei Pull Requests nur bauen, nicht pushen - Forks haben keine Rechte.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # "prod" ist das bewegliche Deploy-Tag und wandert ausschliesslich
+          # bei einem Release-Tag mit. Ein Push auf main veraendert damit
+          # nichts in Produktion.
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=prod,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+  # ---------------------------------------------------------------------------
+  # Rollout nur bei Release-Tags. Der Server holt sich das Update selbst:
+  # Portainer bekommt einen POST auf seinen Stack-Webhook und zieht :prod.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy nach Produktion
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Portainer-Redeploy auslösen
+        env:
+          WEBHOOK: ${{ secrets.PORTAINER_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::error::Secret PORTAINER_WEBHOOK_URL ist nicht gesetzt."
+            exit 1
+          fi
+          code=$(curl -sS -o /tmp/webhook.txt -w '%{http_code}' \
+                   --max-time 60 -X POST "$WEBHOOK")
+          echo "Portainer antwortete mit HTTP $code"
+          cat /tmp/webhook.txt || true
+          case "$code" in
+            2*) ;;
+            *)  echo "::error::Redeploy abgelehnt (HTTP $code)"; exit 1 ;;
+          esac
+
+      - name: Auf gesunde Seite warten
+        env:
+          HEALTH_URL: ${{ vars.DEPLOY_HEALTH_URL }}
+        run: |
+          url="${HEALTH_URL:?Variable DEPLOY_HEALTH_URL ist nicht gesetzt}"
+          echo "Warte auf $url"
+          for i in $(seq 1 20); do
+            if curl -fsS --max-time 10 "$url" | grep -q '^ok$'; then
+              echo "Seite ist erreichbar (nach $((i * 15))s)."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Seite wurde binnen 5 Minuten nicht erreichbar."
+          exit 1
