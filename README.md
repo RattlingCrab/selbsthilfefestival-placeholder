@@ -131,7 +131,7 @@ fix: Impressum an Stand der Festivalseite angeglichen
 | Art | Name | Inhalt |
 |---|---|---|
 | Secret | `PORTAINER_WEBHOOK_URL` | Stack-Webhook |
-| Variable | `DEPLOY_HEALTH_URL` | z. B. `https://selbsthilfefestival-hessen.de/healthz` |
+| Variable | `DEPLOY_HEALTH_URL` | z. B. `https://festival-selbsthilfe.de/healthz` |
 
 ---
 
