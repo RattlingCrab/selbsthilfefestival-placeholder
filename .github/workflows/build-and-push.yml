@@ -98,7 +98,10 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          # Nur ARM64: der Netcup VPS ist die einzige Umgebung, die dieses Image
+          # ausfuehrt. Der amd64-Zweig kostete GHCR-Speicher ohne Abnehmer und
+          # zaehlt im Free-Tarif gegen das Paket-Kontingent.
+          platforms: linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
