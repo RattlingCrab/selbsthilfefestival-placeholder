@@ -146,6 +146,11 @@ a{ color:inherit; }
   display:inline-flex; align-items:center; justify-content:center;
   width:.9em; height:1.6em; height:1lh;
 }
+/* Einfärbung als Modifier statt als style-Attribut im Markup. html-validate
+   verbietet Inline-Styles (no-inline-style), und im Designsystem gehören
+   Token-Zuweisungen ohnehin hierher. ::before nutzt currentColor. */
+.blatt--wurzeln{  color:var(--strang-wurzeln); }
+.blatt--wachstum{ color:var(--strang-wachstum); }
 .blatt::before{
   content:''; display:block; width:.85em; height:.85em;
   background:currentColor; border-radius:0 100% 0 100%;
