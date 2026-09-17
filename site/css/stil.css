@@ -277,11 +277,56 @@ a{ color:inherit; }
 }
 .buehne__text + .buehne__text{ margin-top:var(--takt-2); }
 
+/* ------------------------------------------------------------
+   Save the Date: Merksatz, Datum, Eckdaten, Anmeldestand.
+   Ersetzt die fruehere Jahreszahl in der Buehne.
+   ------------------------------------------------------------ */
+.merksatz{
+  font-family:'Archivo', system-ui, sans-serif;
+  font-size:clamp(3.2rem, 9.5vw, 6.5rem);
+  font-weight:800; line-height:.9; letter-spacing:-.04em;
+  margin-bottom:var(--takt-3);
+  text-wrap:balance;
+}
+.merksatz--leicht{ font-size:clamp(2rem, 5.5vw, 3.4rem); line-height:1.1; }
+
+.datum{
+  font-family:'Archivo', system-ui, sans-serif;
+  font-size:clamp(1.5rem, 3.4vw, 2.4rem);
+  font-weight:700; line-height:1.15; letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+  margin-bottom:var(--takt-3);
+}
+
+.eckdaten{
+  display:flex; flex-wrap:wrap;
+  gap:var(--takt-1) var(--takt-4);
+  margin-bottom:var(--takt-4);
+}
+.eckdaten li{
+  display:flex; align-items:center; gap:.7rem;
+  font-size:clamp(1.05rem, 1.6vw, 1.3rem);
+  color:var(--text-auf-tief);
+}
+
+.status{
+  display:inline-flex; align-items:center; gap:.7rem;
+  border:1px solid color-mix(in srgb, var(--text-auf-tief) 34%, transparent);
+  border-radius:999px; padding:.6rem 1.15rem;
+  font-family:'Archivo', system-ui, sans-serif;
+  font-weight:600; font-size:1.05rem;
+  color:var(--text-auf-tief);
+}
+.status::before{
+  content:''; flex:none;
+  width:.62rem; height:.62rem; border-radius:50%;
+  background:var(--strang-wachstum);
+}
+
 /* ============================================================
    KONTAKT
    ============================================================ */
 .abschnitt{ padding-block:clamp(3rem, 7vw, var(--takt-6)); }
-.newsletterblock{ background:var(--grund-papier); }
 .kontaktblock{ padding-block:clamp(3rem, 7vw, var(--takt-6)); background:var(--grund); }
 .kontaktblock__gitter{
   display:grid; gap:clamp(2rem,4vw,3.5rem);
@@ -330,63 +375,6 @@ a{ color:inherit; }
              border-color var(--tempo-schnell) var(--kurve);
 }
 .knopf:hover{ background:var(--aktion-hover); border-color:var(--aktion-hover); }
-
-/* ============================================================
-   NEWSLETTER
-   ============================================================ */
-.newsletter{
-  background:var(--flaeche-karte);
-  border:1px solid var(--linie);
-  border-radius:var(--radius-gross);
-  padding:clamp(1.5rem, 4vw, var(--takt-4));
-}
-.newsletter__gitter{
-  display:grid; gap:clamp(1.5rem,3vw,var(--takt-4));
-  grid-template-columns:1fr 1fr; align-items:start;
-}
-@media (max-width: 820px){ .newsletter__gitter{ grid-template-columns:1fr; } }
-
-.newsletter h2{ font-size:clamp(1.4rem,2.4vw,1.9rem); margin-bottom:.6rem; }
-.newsletter__text{ color:var(--text-sekundaer); max-width:44ch; }
-
-.newsletter__form{ display:flex; flex-direction:column; gap:var(--takt-2); }
-.feld{ display:flex; flex-direction:column; gap:.4rem; }
-.feld label{
-  font-family:'Archivo', system-ui, sans-serif;
-  font-size:.9rem; font-weight:600;
-}
-.feld input[type="email"]{
-  font:inherit; font-size:1.0625rem;
-  color:var(--text); background:var(--grund);
-  border:2px solid var(--linie-stark);
-  border-radius:var(--radius);
-  padding:.8rem .9rem;
-  min-height:48px;
-  transition:border-color var(--tempo-schnell) var(--kurve);
-}
-.feld input[type="email"]:hover{ border-color:var(--text-sekundaer); }
-.feld input[type="email"]:focus-visible{ border-color:var(--fokus); }
-.feld__hinweis{ font-size:.9rem; color:var(--text-sekundaer); }
-
-/* Einwilligung: große Klickflaeche ueber das ganze Label */
-.zustimmung{
-  display:flex; gap:.8rem; align-items:flex-start;
-  cursor:pointer; padding:.35rem 0;
-  font-size:.98rem; line-height:1.5; color:var(--text-sekundaer);
-}
-.zustimmung input[type="checkbox"]{
-  flex:none; width:24px; height:24px; margin:0;
-  accent-color:var(--strang-wurzeln);
-  margin-top:calc((1.5em - 24px) / 2);
-  cursor:pointer;
-}
-.zustimmung a{ color:var(--text); text-decoration:underline; text-underline-offset:3px; }
-
-.newsletter__fuss{
-  font-size:.9rem; color:var(--text-sekundaer);
-  border-top:1px solid var(--linie);
-  padding-top:var(--takt-2);
-}
 
 /* ============================================================
    FUSS
