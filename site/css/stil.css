@@ -431,21 +431,6 @@ body:has(.rechtsseite:target) > main{ display:none; }
   margin-bottom:var(--takt-4); font-weight:600; text-decoration:none;
   border-bottom:2px solid var(--strang-wurzeln); padding-bottom:.15rem;
 }
-.hinweiskasten{
-  background:var(--grund-papier);
-  border:1px solid var(--linie);
-  border-left:4px solid var(--strang-wir);
-  border-radius:var(--radius-gross);
-  padding:var(--takt-3); margin-top:var(--takt-3);
-}
-.hinweiskasten p{ color:var(--text-sekundaer); font-size:1rem; }
-.platzhalter{
-  display:inline-flex; align-items:center; gap:.4rem;
-  background:color-mix(in srgb, var(--strang-wir) 12%, transparent);
-  border:1px dashed var(--strang-wir); color:var(--strang-wir);
-  border-radius:var(--radius); padding:.1rem .5rem;
-  font-size:.85em; font-weight:600;
-}
 
 /* Leichte Sprache */
 .nur-leicht{ display:none; }
